@@ -1,6 +1,7 @@
 import express from 'express';
 import * as api from '../services/api.js';
-import MongoDB from '../services/db.js';
+/// TODO: Fix unused import!
+// import MongoDB from '../services/db.js';
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.get('/', async (req, res) => {
         const result = _formatMeals(mealQuery.meals);
         const entry = { result };
 
+        /// TODO: complete & fix search functionality?
         // if(!searchTerm){
         //     const date = new Date().now()
 
@@ -46,8 +48,6 @@ router.get('/', async (req, res) => {
         //         lastSearched: date
         //     });
         // } 
-
-
         
         res.json(entry);
   
