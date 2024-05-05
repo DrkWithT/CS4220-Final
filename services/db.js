@@ -3,10 +3,9 @@ import {MongoClient} from 'mongodb';
 /**
  * Class representing a MongoDB database connection and interactions
  */
-class MongoDB {
-   
+export class MongoDB {
     /**
-     * constructor
+     * @description Initializes the MongoDB wrapper with credentials and used db location.
      */
     constructor(dbUser, dbPassword, dbHost, dbName){
         // Constructs the Mongo URL
@@ -18,9 +17,8 @@ class MongoDB {
     }
 
     /**
-     * Opens a connection to the MongoDB database
+     * @description Attempts to open a connection to the MongoDB database.
      */
-   
     async connect(){
         try{
             await this.client.connect();
@@ -32,7 +30,7 @@ class MongoDB {
     }
 
     /**
-     * Closes the connection to the MongoDB database.
+     * @description Attempts to open a connection to the MongoDB database.
      */
     async close(){
         try{
@@ -51,7 +49,6 @@ class MongoDB {
      * @param {Object} data - the data to be inserted into the collection
      * @returns {Promise<Object>} - a Promise that resolves with the acknoledgement document
      */
-
     async create (collectionName, data){
         try{
             const collection = this.db.collection(collectionName);
@@ -69,19 +66,18 @@ class MongoDB {
      * @param {string} _id - the _id of the document to find
      * @returns {Promise<Cursor>} - a Promise that resolves with the cursor
      */
-
     async find (collectionName, mealId){
         try{
             const collection = this.db.collection(collectionName);
            
             if(mealId){
                 console.log('FOUND:');
-                const cursor = await collection.find({ mealId });
+                const cursor = collection.find({ mealId });
                 return await cursor.next();
             }
             else{
                 console.log('NOT FOUND:');
-                const cursor = await collection.find({});
+                const cursor = collection.find({});
                 return await cursor.next();
             }
         }
@@ -109,8 +105,4 @@ class MongoDB {
             console.error(err);
         }
     }
-
-
 }
-
-export default MongoDB;

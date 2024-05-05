@@ -1,6 +1,7 @@
 import express from 'express';
 import * as api from '../services/api.js';
-import MongoDB from '../services/db.js';
+/// TODO: Fix unused import!
+// import MongoDB from '../services/db.js';
 
 const router = express.Router();
 
@@ -24,36 +25,32 @@ router.get('/', async (req, res) => {
         const result = _formatMeals(mealQuery.meals);
         const entry = { result };
 
+
         res.json(entry);
 
-        await MongoDB.create('search_history', {
+       T
+        if(!searchTerm){
+            await MongoDB.create('search_history', {
             searchterm: searchTerm,
             searchCount: result.length,
             lastSearched: Date.now()
-        });
+            });
+          console.log("Data successful stored in datatbase!");
+        }
+        else{
+            await MongoDB.update('search_history', {
+                searchterm: searchTerm,
+                searchCount: result.length(),
+                lastSearched: Date.now()
+            });
+        } 
+        
+        res.json(entry);
 
-        // await MongoDB.find('search_history', )
-        // if(!searchTerm){
-        //     await MongoDB.create('search_history', {
-        //         searchterm: searchTerm,
-        //         searchCount: result.length(),
-        //         lastSearched: Date.now()
-        //     });
-
-        //     console.log("Data successful stored in datatbase!");
-        // }
-        // else{
-        //     await MongoDB.update('search_history', {
-        //         searchterm: searchTerm,
-        //         searchCount: result.length(),
-        //         lastSearched: Date.now()
-        //     });
-        // } 
   
     } catch (err) {
         res.status(500).json({ err });
     }
 });
-
 
 export default router;

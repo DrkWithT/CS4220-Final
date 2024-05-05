@@ -1,40 +1,44 @@
 import express from 'express';
-import mongo from '../server/db.js';
+import {MongoDB} from '../services/db.js';
 
-const router = express.Router();
+const HistoryRouter = express.Router();
 
+/**
+ * @description Reformats data objects from db into name-value pairs.
+ * @param {{strMeal: string, idMeal: any}[]} meals 
+ * @returns {{name: string, value: any}[]}
+ */
 const _formatMeals = (meals) => {
     return meals.map((meal) => {
         return {name : `${meal.strMeal}`, value: meal.idMeal};
     });
 };
 
-router.get('/', async (req, res) => {
+HistoryRouter.get('/', async (req, res) => {
+    const mongoUtility = new MongoDB(process.env['DB_USER'], process.env['DB_PASSWORD'], process.env['DB_HOST'], process.env['DB_NAME'])
+
     try{
         const { query } = req;
         const { mealId } = query;
 
         let previousMeal;
 
-        if(mealId){
-            const cursor = await mongo.find('searchHistory', mealId);
-            const previousMeal = await cursor.next();
-            return previousMeal;
-        }
-        else {
-            const cursor = await mongo.find('searchHistory');
-            const previousMeal = await cursor.toArray();
-            return previousMeal;
+        if(mealId) {
+            const cursor = await mongoUtility.find('search_history', mealId);
+            previousMeal = await cursor.next();
+        } else {
+            const cursor = await mongoUtility.find('search_history');
+            previousMeal = await cursor.toArray();
         }
 
         const result = _formatMeals(previousMeal);
 
-
         res.json(result);
-    }
-    catch (err){
+    } catch (err){
         res.status(500).json({ err });
+    } finally {
+        mongoUtility.close();
     }
 });
 
-export default router;
+export default HistoryRouter;
