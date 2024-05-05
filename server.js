@@ -1,19 +1,12 @@
 import express from 'express';
-import MongoDB from './services/db.js';
-import dotenv from 'dotenv';
+
+import mongo from './services/db.js';
 import search from './routes/search.js'
 
 const PORT = 8080;
 
 // creating Express application instance
 const app = express();
-
-dotenv.config();
-const {DB_USER, DB_PASSWORD, DB_HOST, DB_NAME} = process.env;
-
-// Instantiate a new MongoDB 
-// loading in the .env and passing in env variables
-const mongo = new MongoDB(`${DB_USER}`, `${DB_PASSWORD}`, `${DB_HOST}`, `${DB_NAME}`);
 
 // GET route to handle requests to the root URL (localhost:8080)
 app.get('/', (req, res) => {

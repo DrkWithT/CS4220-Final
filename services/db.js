@@ -1,116 +1,114 @@
+import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
 
 /**
- * Class representing a MongoDB database connection and interactions
+ * ES6 module for interacting with MongoDB
+ * @returns {Object} - Object containing functions to interact with MongoDB
  */
-class MongoDB {
-   
-    /**
-     * constructor
-     */
-    constructor(dbUser, dbPassword, dbHost, dbName){
-        // Constructs the Mongo URL
-        const mongoURL = `mongodb+srv://${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority&appName=Cluster0`; 
-        
-        // Defined variables for the MongoDB client and database.
-        this.client = new MongoClient(mongoURL);
-        this.db = this.client.db();
-    }
+const mongo = () => {
+    // Load the environment variables from the .env file
+    dotenv.config();
+
+    const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
+    const mongoURL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
+
+    let client;
+    let db;
 
     /**
      * Opens a connection to the MongoDB database
      */
-   
-    async connect(){
-        try{
-            await this.client.connect();
-            console.log('\nConnected to MongoDB');
-        }
-        catch (err){
+    async function connect() {
+        try {
+            client = new MongoClient(mongoURL);
+            await client.connect();
+
+            db = client.db();
+           
+            console.log('Connected to MongoDB');
+        } catch (err) {
             console.error(err);
         }
     }
 
     /**
-     * Closes the connection to the MongoDB database.
+     * Closes the connection to the MongoDB database
      */
-    async close(){
-        try{
-            await this.client.close();
+    async function close() {
+        try {
+            await client.close();
 
-            console.log('Disconnected from MongoDB\n');
-        }
-        catch (err){
+            console.log('Closed connection to MongoDB');
+        } catch (err) {
             console.error(err);
         }
     }
 
     /**
      * Creates a new document in the specified collection
-     * @param {string} collectionName - the name of the collection
-     * @param {Object} data - the data to be inserted into the collection
-     * @returns {Promise<Object>} - a Promise that resolves with the acknoledgement document
+     * @param {string} collectionName - name of the collection
+     * @param {Object} data - data to be inserted into the collection
      */
-
-    async create (collectionName, data){
-        try{
-            const collection = this.db.collection(collectionName);
+    async function create(collectionName, data) {
+        try {
+            const collection = db.collection(collectionName);
             await collection.insertOne(data);
-            
-        }
-        catch (err){
+        } catch (err) {
             console.error(err);
         }
     }
-    
-    /**
-     * Finds documents by their _id in the specified collection
-     * @param {string} collectionName - the name of the collection
-     * @param {string} _id - the _id of the document to find
-     * @returns {Promise<Cursor>} - a Promise that resolves with the cursor
-     */
 
-    async find (collectionName, mealId){
-        try{
-            const collection = this.db.collection(collectionName);
-           
-            if(mealId){
-                console.log('FOUND:');
-                const cursor = await collection.find({ mealId });
-                return await cursor.next();
-            }
-            else{
-                console.log('NOT FOUND:');
+    /**
+     * Finds documents in the specified collection
+     * @param {string} collectionName - name of the collection
+     * @param {string} deckIdentifier - identifier for filtering documents
+     * @returns {Cursor} - a MongoDB Cursor object
+     */
+    async function find(collectionName, mealId) {
+        try {
+            const collection = db.collection(collectionName);
+
+            if (mealId) {
+                const cursor = await collection.find({
+                    mealId: mealId
+                });
+                return cursor;
+            } else {
                 const cursor = await collection.find({});
-                return await cursor.next();
+                return cursor;
             }
-        }
-        catch (err){
+        } catch (err) {
             console.error(err);
         }
     }
 
     /**
-     * Update documents by their _id in the specified collection
-     * @param {string} collectionName - the name of the collection
-     * @param {string} _id - the _id of the document to find
-     * @param {string} data - data to update the document
+     * Updates documents in the specified collection
+     * @param {string} collectionName - name of the collection
+     * @param {string} deckIdentifier - identifier for filtering documents
+     * @param {Object} data - the data to be updated
      */
-
-    async update (collectionName, mealId, data){
-        try{
-            const collection = this.db.collection(collectionName);
+    async function update(collectionName, mealId, data) {
+        try {
+            const collection = db.collection(collectionName);
             await collection.updateOne(
                 { mealId: mealId },
                 { $set: data }
             );
-        }
-        catch (err){
+        } catch (err) {
             console.error(err);
         }
     }
 
+    return {
+        connect,
+        close,
+        create,
+        find,
+        update
+    };
 
-}
 
-export default MongoDB;
+};
+
+export default mongo();
