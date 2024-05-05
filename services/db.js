@@ -16,7 +16,7 @@ const mongo = () => {
     let db;
 
     /**
-     * Opens a connection to the MongoDB database
+     * @description Attempts to open a connection to the MongoDB database.
      */
     async function connect() {
         try {
@@ -27,12 +27,13 @@ const mongo = () => {
            
             console.log('Connected to MongoDB');
         } catch (err) {
-            console.error(err);
+            console.error( err );
         }
     }
 
     /**
      * Closes the connection to the MongoDB database
+     * @description Attempts to open a connection to the MongoDB database.
      */
     async function close() {
         try {
@@ -64,6 +65,7 @@ const mongo = () => {
      * @param {string} deckIdentifier - identifier for filtering documents
      * @returns {Cursor} - a MongoDB Cursor object
      */
+
     async function find(collectionName, mealId) {
         try {
             const collection = db.collection(collectionName);
@@ -77,8 +79,10 @@ const mongo = () => {
                 const cursor = await collection.find({});
                 return cursor;
             }
-        } catch (err) {
-            console.error(err);
+
+        }
+        catch(err){
+            console.error( err );
         }
     }
 
@@ -99,7 +103,7 @@ const mongo = () => {
             console.error(err);
         }
     }
-
+    
     return {
         connect,
         close,
@@ -107,8 +111,6 @@ const mongo = () => {
         find,
         update
     };
-
-
 };
 
 export default mongo();

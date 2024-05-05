@@ -27,15 +27,15 @@ router.get('/', async (req, res) => {
         const result = _formatMeals(mealQuery.meals);
         const entry = { result };
 
+
         res.json(entry);
 
         if(!searchTerm){
-            await mongo.create('search_history', {
+                await mongo.create('search_history', {
                 searchterm: searchTerm,
-                searchCount: result.length(),
+                searchCount: result.length,
                 lastSearched: Date.now()
             });
-
             console.log("Data successful stored in datatbase!");
         }
         else{
@@ -44,12 +44,12 @@ router.get('/', async (req, res) => {
                 searchCount: result.length(),
                 lastSearched: Date.now()
             });
-        } 
-  
+            console.log("Data successful stored in datatbase!");
+        }
+        
     } catch (err) {
         res.status(500).json({ err });
     }
 });
-
 
 export default router;
