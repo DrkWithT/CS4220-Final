@@ -9,11 +9,11 @@ const PORT = 8080;
 const app = express();
 
 dotenv.config();
-const {DB_USER, DB_PASSWORD, DB_HOST, HISTORY_DB_NAME} = process.env;
+const {DB_USER, DB_PASSWORD, DB_HOST, DB_NAME} = process.env;
 
 // Instantiate a new MongoDB 
 // loading in the .env and passing in env variables
-const mongo = new MongoDB(`${DB_USER}`, `${DB_PASSWORD}`, `${DB_HOST}`, `${HISTORY_DB_NAME}`);
+const mongo = new MongoDB(`${DB_USER}`, `${DB_PASSWORD}`, `${DB_HOST}`, `${DB_NAME}`);
 
 // GET route to handle requests to the root URL (localhost:8080)
 app.get('/', (req, res) => {

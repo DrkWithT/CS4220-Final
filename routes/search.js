@@ -22,39 +22,35 @@ router.get('/', async (req, res) => {
 
         const mealQuery = await api.searchByName(searchTerm);
 
-        const date = new Date.now();
-        console.log(date.toLocaleString());
-
         const result = _formatMeals(mealQuery.meals);
         const entry = { result };
 
-        /// TODO: complete & fix search functionality?
-        // if(!searchTerm){
-        //     const date = new Date().now()
 
-        //     await MongoDB.create('search_history', {
-        //         searchterm: searchTerm,
-        //         searchCount: entry.length(),
-        //         lastSearched: date
-        //     });
-        // }
-        // else{
+        res.json(entry);
 
-        //     const date = new Date().now()
-
-        //     await MongoDB.update('search_history', {
-        //         searchterm: searchTerm,
-        //         searchCount: result.length(),
-        //         lastSearched: date
-        //     });
-        // } 
+       T
+        if(!searchTerm){
+            await MongoDB.create('search_history', {
+            searchterm: searchTerm,
+            searchCount: result.length,
+            lastSearched: Date.now()
+            });
+          console.log("Data successful stored in datatbase!");
+        }
+        else{
+            await MongoDB.update('search_history', {
+                searchterm: searchTerm,
+                searchCount: result.length(),
+                lastSearched: Date.now()
+            });
+        } 
         
         res.json(entry);
+
   
     } catch (err) {
         res.status(500).json({ err });
     }
 });
-
 
 export default router;

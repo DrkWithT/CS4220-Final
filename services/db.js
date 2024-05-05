@@ -52,8 +52,8 @@ export class MongoDB {
     async create (collectionName, data){
         try{
             const collection = this.db.collection(collectionName);
-            const doc = await collection.insertOne(data);
-            return doc;
+            await collection.insertOne(data);
+            
         }
         catch (err){
             console.error(err);
@@ -70,7 +70,7 @@ export class MongoDB {
         try{
             const collection = this.db.collection(collectionName);
            
-            if(villain_id){
+            if(mealId){
                 console.log('FOUND:');
                 const cursor = collection.find({ mealId });
                 return await cursor.next();
