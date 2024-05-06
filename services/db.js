@@ -1,12 +1,20 @@
+/**
+ * @file db.js
+ * @instructor Prof. Auman
+ * @course CS 4220 Spring 2024
+ * @author "Derek's Group"
+ * @note Borrowed from the deck-of-cards sample.
+ */
+
 import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
 
 /**
- * ES6 module for interacting with MongoDB
- * @returns {Object} - Object containing functions to interact with MongoDB
+ * @description Contains the ES6-style module for interacting with a remote MongoDB instance.
+ * @returns {{connect: () => Promise<void>, close: () => Promise<void>, create: () => Promise<void>, find: () => Cursor, update: () => Promise<void>}} - The unpacked object with MongoDB utility functions.
  */
 const mongo = () => {
-    // Load the environment variables from the .env file
+    // 1. Load and unpack the environment variables from the .env file
     dotenv.config();
 
     const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
@@ -24,7 +32,7 @@ const mongo = () => {
             await client.connect();
 
             db = client.db();
-           
+  
             console.log('Connected to MongoDB');
         } catch (err) {
             console.error( err );
@@ -65,7 +73,6 @@ const mongo = () => {
      * @param {string} deckIdentifier - identifier for filtering documents
      * @returns {Cursor} - a MongoDB Cursor object
      */
-
     async function find(collectionName, keyword) {
         try {
             const collection = db.collection(collectionName);
