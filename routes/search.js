@@ -2,7 +2,10 @@ import express from 'express';
 import * as api from '../services/api.js';
 import mongo from '../services/db.js';
 
-const router = express.Router();
+/**
+ * @description Express router with Meal DB API search functionality.
+ */
+const SearchRouter = express.Router();
 
 const _formatMeals = (meals) => {
     return meals.map((meal) => {
@@ -17,7 +20,7 @@ const _formatMeals = (meals) => {
  * GET request for '/search' endpoint
  * @description Searches by serchTerm, displays all the meals with the searchTerm and caves the results of the searchTerm in the MongoDB
  */
-router.get('/', async (req, res) => {
+SearchRouter.get('/', async (req, res) => {
     try {
         const { query } = req;
         const { searchTerm } = query;
@@ -56,4 +59,4 @@ router.get('/', async (req, res) => {
     }
 });
 
-export default router;
+export default SearchRouter;
