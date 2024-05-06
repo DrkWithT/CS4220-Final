@@ -66,20 +66,19 @@ const mongo = () => {
      * @returns {Cursor} - a MongoDB Cursor object
      */
 
-    async function find(collectionName, mealId) {
+    async function find(collectionName, keyword) {
         try {
             const collection = db.collection(collectionName);
 
-            if (mealId) {
+            if (keyword) {
                 const cursor = await collection.find({
-                    mealId: mealId
+                    searchTerm: keyword
                 });
                 return cursor;
             } else {
                 const cursor = await collection.find({});
                 return cursor;
             }
-
         }
         catch(err){
             console.error( err );
@@ -92,11 +91,11 @@ const mongo = () => {
      * @param {string} deckIdentifier - identifier for filtering documents
      * @param {Object} data - the data to be updated
      */
-    async function update(collectionName, mealId, data) {
+    async function update(collectionName, keyword, data) {
         try {
             const collection = db.collection(collectionName);
             await collection.updateOne(
-                { mealId: mealId },
+                { searchTerm: keyword },
                 { $set: data }
             );
         } catch (err) {

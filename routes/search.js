@@ -27,24 +27,28 @@ router.get('/', async (req, res) => {
         const result = _formatMeals(mealQuery.meals);
         const entry = { result };
 
+        const cursor = await mongo.find('search_history', searchTerm);
+        const keyword = await cursor.next();
 
+        const date = new Date();   
+        
         res.json(entry);
 
-        if(!searchTerm){
+        if(keyword === null){
                 await mongo.create('search_history', {
-                searchterm: searchTerm,
+                searchTerm: searchTerm,
                 searchCount: result.length,
-                lastSearched: Date.now()
+                lastSearched: date.toDateString() + ' ' + date.toLocaleTimeString('en-US')
             });
-            console.log("Data successful stored in datatbase!");
+           console.log("Data successful stored in datatbase!");
         }
         else{
-            await mongo.update('search_history', {
-                searchterm: searchTerm,
-                searchCount: result.length(),
-                lastSearched: Date.now()
-            });
-            console.log("Data successful stored in datatbase!");
+           await mongo.update('search_history', searchTerm, {
+               searchTerm: searchTerm,
+               searchCount: result.length,
+               lastSearched: date.toDateString() + ' ' + date.toLocaleTimeString('en-US')  
+           });
+           console.log("Data successful updated in datatbase!");
         }
         
     } catch (err) {
