@@ -23,7 +23,12 @@ export async function searchByName(mealName) {
     }
 }
 
-// www.themealdb.com/api/json/v1/1/lookup.php?i=52772
+/**
+ * @description Does a search by API id for some recipe.
+ * @note Sample URL: `www.themealdb.com/api/json/v1/1/lookup.php?i=52772`
+ * @param {string} mealId Numeric literal as string.
+ * @returns {any} The response data.
+ */
 export async function searchById(mealId) {
     try {
         const apiURL = `${base}/lookup.php?i=${mealId}`;

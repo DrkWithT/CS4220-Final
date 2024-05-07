@@ -11,7 +11,7 @@ import {MongoClient} from 'mongodb';
 
 /**
  * @description Contains the ES6-style module for interacting with a remote MongoDB instance.
- * @returns {{connect: () => Promise<void>, close: () => Promise<void>, create: () => Promise<void>, find: () => Cursor, update: () => Promise<void>}} - The unpacked object with MongoDB utility functions.
+ * @returns {{connect: () => Promise<void>, close: () => Promise<void>, create: () => Promise<void>, find: () => Promise<any>, update: () => Promise<void>}} - The unpacked object with MongoDB utility functions.
  */
 const mongo = () => {
     // 1. Load and unpack the environment variables from the .env file
@@ -20,11 +20,15 @@ const mongo = () => {
     const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
     const mongoURL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
 
+    /** @type {MongoClient} */
     let client;
+
+    /** @type {Db} */
     let db;
 
     /**
      * @description Attempts to open a connection to the MongoDB database.
+     * @returns {Promise<void>}
      */
     async function connect() {
         try {
@@ -42,6 +46,7 @@ const mongo = () => {
     /**
      * Closes the connection to the MongoDB database
      * @description Attempts to open a connection to the MongoDB database.
+     * @returns {Promise<void>}
      */
     async function close() {
         try {
@@ -57,6 +62,7 @@ const mongo = () => {
      * Creates a new document in the specified collection
      * @param {string} collectionName - name of the collection
      * @param {Object} data - data to be inserted into the collection
+     * @returns {Promise<void>}
      */
     async function create(collectionName, data) {
         try {
@@ -70,20 +76,20 @@ const mongo = () => {
     /**
      * Finds documents in the specified collection
      * @param {string} collectionName - name of the collection
-     * @param {string} deckIdentifier - identifier for filtering documents
-     * @returns {Cursor} - a MongoDB Cursor object
+     * @param {string} keyword - identifier for filtering documents
+     * @returns {Promise<FindCursor<WithId<Document>>>} - a MongoDB Cursor object as Promise result.
      */
     async function find(collectionName, keyword) {
         try {
             const collection = db.collection(collectionName);
 
             if (keyword) {
-                const cursor = await collection.find({
+                const cursor = collection.find({
                     searchTerm: keyword
                 });
                 return cursor;
             } else {
-                const cursor = await collection.find({});
+                const cursor = collection.find({});
                 return cursor;
             }
         }
@@ -97,6 +103,7 @@ const mongo = () => {
      * @param {string} collectionName - name of the collection
      * @param {string} deckIdentifier - identifier for filtering documents
      * @param {Object} data - the data to be updated
+     * @returns {Promise<void>}
      */
     async function update(collectionName, keyword, data) {
         try {
