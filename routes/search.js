@@ -39,20 +39,22 @@ SearchRouter.get('/', async (req, res) => {
         const resultDate = new Date();
         const resultDateStr = `${resultDate.toDateString()} ${resultDate.toLocaleTimeString('en-US')}`;
 
-        // Check whether to store / update the search result in history.
+        // Looks for the searchTerm in search_history collection in MongoDB.
         const historyCursor = await mongo.find('search_history', searchTerm);
-        const historyItemsExist = await historyCursor.hasNext();
+        const historyItemsExist = await historyCursor.next();
 
+        // Create the entry object that contains searchTerm information.
         const tempEntry = {
             searchTerm: searchTerm,
             searchCount: resultCount,
             lastSearched: resultDateStr
         };
-
-        if (!historyItemsExist) {
+        
+        // Check whether to store / update the search result in history.
+        if (!historyItemsExist === null) {
             await mongo.create('search_history', tempEntry);
         } else {
-            await mongo.update('search_history', searchTerm, tempEntry);
+            await mongo.update('search_history', historyItemExist.searchTerm, tempEntry);
         }
 
         /// @note Send response at last step to avoid double header settings on exception handling path of execution.
