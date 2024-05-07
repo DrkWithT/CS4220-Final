@@ -1,45 +1,28 @@
 import express from 'express';
 import mongo from '../services/db.js';
 
-/**
- * @description Express router with search history functionality.
- */
 const HistoryRouter = express.Router();
 
-/**
- * @description Reformats data objects from db into name-value pairs.
- * @param {{strMeal: string, idMeal: any}[]} meals 
- * @returns {{name: string, value: any}[]}
- */
-const _formatMeals = (meals) => {
-    return meals.map((meal) => {
-        return { name: `${meal.strMeal}`, value: meal.idMeal };
-    });
-};
-
+// GET localhost:8080/history endpoint
 HistoryRouter.get('/', async (req, res) => {
     try {
-        const { query } = req;
-        const { mealId } = query; // earlier search keyword if any
+        const { searchTerm } = req.query;
 
-        let previousMeal;
-
-        if (mealId) {
-            const cursor = await mongo.find('search_history', mealId);
-            previousMeal = await cursor.next();
+        // Retrieve search history from the database
+        let historyData;
+        if (searchTerm) {
+            // If searchTerm is provided, filter search history by searchTerm
+            historyData = await mongo.find('search_history', searchTerm);
         } else {
-            const cursor = await mongo.find('search_history');
-            previousMeal = await cursor.toArray();
+            // If no searchTerm is provided, retrieve all search history
+            historyData = await mongo.find('search_history');
         }
 
-        // Restructure the JS object parsed from MongoDB query result.
-        const result = _formatMeals(previousMeal);
-
-        /// @note We give response with its set headers lastly after all throwable calls to ensure no double header setting error on any throw.
-        res.json(result);
-
+        // Send JSON response with search history data
+        res.json(await historyData.toArray());
     } catch (err) {
-        res.status(500).json({ err });
+        // If an error occurs, send an error response
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
