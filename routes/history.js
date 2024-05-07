@@ -1,6 +1,9 @@
 import express from 'express';
-import {MongoDB} from '../services/db.js';
+import mongo from '../services/db.js';
 
+/**
+ * @description Express router with search history functionality.
+ */
 const HistoryRouter = express.Router();
 
 /**
@@ -10,34 +13,33 @@ const HistoryRouter = express.Router();
  */
 const _formatMeals = (meals) => {
     return meals.map((meal) => {
-        return {name : `${meal.strMeal}`, value: meal.idMeal};
+        return { name: `${meal.strMeal}`, value: meal.idMeal };
     });
 };
 
 HistoryRouter.get('/', async (req, res) => {
-    const mongoUtility = new MongoDB(process.env['DB_USER'], process.env['DB_PASSWORD'], process.env['DB_HOST'], process.env['DB_NAME'])
-
-    try{
+    try {
         const { query } = req;
-        const { mealId } = query;
+        const { mealId } = query; // earlier search keyword if any
 
         let previousMeal;
 
-        if(mealId) {
-            const cursor = await mongoUtility.find('search_history', mealId);
+        if (mealId) {
+            const cursor = await mongo.find('search_history', mealId);
             previousMeal = await cursor.next();
         } else {
-            const cursor = await mongoUtility.find('search_history');
+            const cursor = await mongo.find('search_history');
             previousMeal = await cursor.toArray();
         }
 
+        // Restructure the JS object parsed from MongoDB query result.
         const result = _formatMeals(previousMeal);
 
+        /// @note We give response with its set headers lastly after all throwable calls to ensure no double header setting error on any throw.
         res.json(result);
-    } catch (err){
+
+    } catch (err) {
         res.status(500).json({ err });
-    } finally {
-        mongoUtility.close();
     }
 });
 

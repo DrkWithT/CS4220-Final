@@ -2,58 +2,105 @@ import express from 'express';
 import * as api from '../services/api.js';
 import mongo from '../services/db.js';
 
-const router = express.Router();
+/**
+ * @description Express router with Meal DB API search functionality.
+ */
+const SearchRouter = express.Router();
 
+/**
+ * @description Restructures an array of objects from a Meal DB API call.
+ * @param {object[]} meals 
+ * @returns {{mealId: string, name: string}[]} The reformatted data.
+ */
 const _formatMeals = (meals) => {
     return meals.map((meal) => {
         return {
             mealId: `${meal.idMeal}`, 
-            name : `${meal.strMeal}`
+            name: `${meal.strMeal}`
         };
     });
 };
 
 /**
- * GET request for '/search' endpoint
- * @description Searches by serchTerm, displays all the meals with the searchTerm and caves the results of the searchTerm in the MongoDB
+ * @description Handles `GET /search?searchTerm=<string>` requests.
+ * @note This follows search.js Point 1 requirements.
  */
-router.get('/', async (req, res) => {
+SearchRouter.get('/', async (req, res) => {
     try {
-        const { query } = req;
-        const { searchTerm } = query;
+        // Unpack query arguments from URL.
+        const { searchTerm } = req.query;
 
-        const mealQuery = await api.searchByName(searchTerm);
+        // Do API search call.
+        const searchResult = await api.searchByName(searchTerm);
 
-        const result = _formatMeals(mealQuery.meals);
-        const entry = { result };
+        // Build possible history entry.
+        const formattedResults = _formatMeals(searchResult.meals);
+        const resultCount = formattedResults.length;
+        const resultDate = new Date();
+        const resultDateStr = `${resultDate.toDateString()} ${resultDate.toLocaleTimeString('en-US')}`;
 
-        const cursor = await mongo.find('search_history', searchTerm);
-        const keyword = await cursor.next();
+        // Check whether to store / update the search result in history.
+        const historyCursor = await mongo.find('search_history', searchTerm);
+        const historyItemsExist = await historyCursor.hasNext();
 
-        const date = new Date();   
-        
-        res.json(entry);
+        const tempEntry = {
+            searchTerm: searchTerm,
+            searchCount: resultCount,
+            lastSearched: resultDateStr
+        };
 
-        if(keyword === null){
-                await mongo.create('search_history', {
-                searchTerm: searchTerm,
-                searchCount: result.length,
-                lastSearched: date.toDateString() + ' ' + date.toLocaleTimeString('en-US')
-            });
-           console.log("Data successful stored in datatbase!");
+        if (!historyItemsExist) {
+            await mongo.create('search_history', tempEntry);
+        } else {
+            await mongo.update('search_history', searchTerm, tempEntry);
         }
-        else{
-           await mongo.update('search_history', searchTerm, {
-               searchTerm: searchTerm,
-               searchCount: result.length,
-               lastSearched: date.toDateString() + ' ' + date.toLocaleTimeString('en-US')  
-           });
-           console.log("Data successful updated in datatbase!");
-        }
-        
+
+        /// @note Send response at last step to avoid double header settings on exception handling path of execution.
+        res.json(formattedResults);
+
     } catch (err) {
-        res.status(500).json({ err });
+        res.status(500).json({errorMsg: `${err}`});
     }
 });
 
-export default router;
+/**
+ * @description Handles `GET /search/:id/details?cache=<true|false>` requests.
+ * @note Follows search.js Part 2 requirements.
+ */
+SearchRouter.get('/:id/details', async (req, res) => {
+    try {
+        // Unpack query arguments from URL.
+        const { id } = req.params;
+        const { cacheQueryParam } = req.query;
+
+        // Storage for result of API or cache
+        let resultObject = null;
+
+        // Based on query flag, fetch detailed data from search_cache if needed.
+        if (cacheQueryParam === "true") {
+            const cacheCursor = mongo.find('search_cache', {mealId: id});
+
+            if (cacheCursor.hasNext()) {
+                // load entry from cache
+                resultObject = cacheCursor.next();
+            } else {
+                const newSearchResult = await api.searchById(id);
+                await mongo.create('search_cache', newSearchResult);
+
+                // otherwise load fresh entry from API on cache miss
+                resultObject = newSearchResult;
+            }
+        } else {
+            const newSearchResult = await api.searchById(id);
+            await mongo.create('search_cache', newSearchResult);
+            resultObject = newSearchResult;
+        }
+
+        res.json(resultObject);
+
+    } catch (err) {
+        res.status(500).json({errorMsg: `${err}`});
+    }
+});
+
+export default SearchRouter;
