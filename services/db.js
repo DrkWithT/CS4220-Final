@@ -79,15 +79,18 @@ const mongo = () => {
      * @param {string} keyword - identifier for filtering documents
      * @returns {Promise<FindCursor<WithId<Document>>>} - a MongoDB Cursor object as Promise result.
      */
-    async function find(collectionName, keyword) {
+    async function find(collectionName, type, keyword) {
         try {
             const collection = db.collection(collectionName);
 
             if (keyword) {
-                const cursor = collection.find({
-                    searchTerm: keyword
-                });
-                return cursor;
+                if (type === 'searchTerm'){
+                    const cursor = collection.find({searchTerm: keyword});
+                    return cursor;
+                }else{
+                    const cursor = collection.find({mealid: keyword});
+                    return cursor;
+                }
             } else {
                 const cursor = collection.find({});
                 return cursor;
