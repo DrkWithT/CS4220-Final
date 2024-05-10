@@ -73,18 +73,19 @@ SearchRouter.get('/:id/details', async (req, res) => {
     try {
         // Unpack query arguments from URL.
         const { id } = req.params;
-        const { cacheQueryParam } = req.query;
+        const { cache } = req.query;
 
         // Storage for result of API or cache
         let resultObject = null;
 
         // Based on query flag, fetch detailed data from search_cache if needed.
-        if (cacheQueryParam === "true") {
-            const cacheCursor = mongo.find('search_cache', {mealId: id});
+        if (cache === "true") {
+            const cacheCursor = await mongo.find('search_cache', {mealId: id});
+            const cacheItemExist = await cacheCursor.next();
 
-            if (cacheCursor.hasNext()) {
+            if (!cacheItemExist === null) {
                 // load entry from cache
-                resultObject = cacheCursor.next();
+                resultObject = cacheItemExist;
             } else {
                 const newSearchResult = await api.searchById(id);
                 await mongo.create('search_cache', newSearchResult);
