@@ -12,7 +12,7 @@ HistoryRouter.get('/', async (req, res) => {
         let historyData;
         if (searchTerm) {
             // If searchTerm is provided, filter search history by searchTerm
-            historyData = await mongo.find('search_history', searchTerm);
+            historyData = await mongo.find('search_history', 'searchTerm',searchTerm);
         } else {
             // If no searchTerm is provided, retrieve all search history
             historyData = await mongo.find('search_history');
